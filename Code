@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberLearner</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background-color: #1e1e2f;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+
+    h2 {
+      text-align: center;
+      color: #50fa7b;
+      margin-bottom: 0px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 15px;
+    }
+
+    #howto-content {
+      font-family: 'Roboto', sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+      font-style:normal;
+    }    
+
+    select, textarea, input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: none;
+      background-color: #2d2d3e;
+      color: white;
+    }
+
+    textarea[readonly] {
+      background-color: #202030;
+    }
+
+    /* Common button style */
+    button {
+      background-color: #50fa7b;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    button:hover {
+      background-color: #40d97a;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Button styling */
+  /*  .action-buttons button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      width: 48%; /* Default width for buttons */
+      /*box-sizing: border-box; /* Make sure padding doesn't affect the width */
+    /*}*/
+
+    #copyResultBtn {
+      background-color: #f4f4f4;
+      color: #333;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 20px;
+      width: 40px;
+      cursor: pointer;
+      align-self: flex-end; /* <-- NEW: forces button to align at bottom of textarea */
+      margin-bottom: 0px;   /* <-- small tweak so it doesn't stick to edge too much */
+    }    
+
+    #generateKeyBtn {
+      margin-left: 10px; /* <-- NEW: adds space between key box and button */
+    }
+    
+
+    #resultContainer {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+  }
+  
+    #result {
+        flex-grow: 1;
+        margin-right: 10px;
+    }
+    
+    #copyResultBtn {
+        background-color: #f4f4f4;
+        color: #333;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 20px;
+        width: 40px;
+        cursor: pointer;
+    }
+    
+    #copyResultBtn:hover {
+        background-color: #ddd;
+    }
+    
+    #resultMessage {
+      color: red;
+      font-weight: 600px;
+      margin-top: 10px;
+    }
+    
+    #copyMessage {
+      color: green;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    
+    .hidden {
+        display: none;
+    }
+
+    .reset-button {
+      background-color: #ff5555;
+      width: 48%; 
+    }
+
+    .log-button {
+      background-color: #f1fa8c;
+      color: #000;
+      width: 48%; 
+    }
+
+    .exit-button {
+      background-color: #bd93f9;
+      color: #000;
+      width: 48%; /* Full width of the container */
+      margin-top: 10px;
+    }
+
+    .howto-button {
+      background-color: #8be9fd;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      width: 48%; /* Full width of the container */
+      margin-top: 10px;
+    }
+    
+
+    .info-toggle {
+      background-color: #6272a4;
+      margin-top: 10px;
+    }
+
+    .info-box {
+      display: none;
+      background-color: #292940;
+      padding: 15px;
+      margin-top: 10px;
+      border-left: 5px solid #50fa7b;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .visible {
+      display: block;
+    }
+
+    .note {
+      font-size: 0.9em;
+      color: #ffb86c;
+      margin-top: 5px;
+    }
+
+    .note-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 500;
+      display: none;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    #keyReminder {
+      font-size: 14px;
+      font-weight: bold;
+      font-style: italic;
+      margin-top: 10px; /* Adjust the margin as needed */
+    }
+
+    /* === THEME TOGGLE SUPPORT === */
+
+    /* Smooth background and text transition */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Dark Theme */
+    body.dark-theme {
+      background-color: #1e1e2f;
+      color: #f4f4f4;
+    }
+
+     /*For md5 and sha256 note*/
+    /* Light Theme */
+    body.light-theme .note-box {
+      background-color: rgba(255, 165, 0, 0.15); /* light orange background */
+      color: #cc7000; /* dark orange text */
+      border: 1px solid #ffa500;
+    }
+
+    /* Dark Theme */
+    body.dark-theme .note-box {
+      background-color: rgba(255, 165, 0, 0.1); /* softer for dark */
+      color: #ffb347; /* bright orange */
+      border: 1px solid #ffb347;
+    }
+
+    /*for random button note color*/
+
+    /* For Dark Mode */
+    body.dark-theme #keyReminder {
+      color: #40d97a; /* Same as dice button color in dark mode */
+    }
+
+    /* For Light Mode */
+    body:not(.dark-theme) #keyReminder {
+      color: #333; /* Dark color, similar to dice button color in light mode */
+    }
+
+    /* Dark Theme */
+    body.dark-theme #copyResultBtn {
+      background-color: #6272a4; /* Same as Random Key button */
+      color: #fff; /* White text */
+      border: 1px solid #333;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 0px; /* Add margin to move the button below the textarea */
+      width: 18%;
+    }
+
+    body.dark-theme #copyResultBtn:hover {
+      background-color: #bd93f9; /* Slightly darker purple on hover */
+    }
+
+
+    /* Light Theme */
+    body.light-theme {
+      background-color: #ffffff;
+      color: #333;
+    }
+
+    /* Styling Message Heading for Light Mode */
+    body.light-theme h2 {
+      font-weight: bold; /* Make Message heading bold in light mode */
+      color: #333
+    }
+
+    body.light-theme .note {
+      font-weight: 500;
+      color: #020d24; /* Change color of key note to be visible in light mode */
+    }
+
+    /* Styling buttons and fields the same as the message box (light mode) */
+    body.light-theme label,
+    body.light-theme select,
+    body.light-theme textarea,
+    body.light-theme input,
+    body.light-theme button {
+      background-color: #f4f4f4; /* Light background */
+      color: #222222;
+      margin-top: 8px; /* Dark text color for better contrast */
+      margin-bottom: 0px;
+    }
+
+    /* Update the result box to match the message and key boxes in light mode */
+    body.light-theme #result,
+    body.light-theme textarea,
+    body.light-theme select,
+    body.light-theme input {
+      background-color: #f4f4f4; /* Light background */
+      color: #222222; /* Dark text for readability */
+      border: 2px solid #ccc; /* Light border */
+    }
+
+    body.light-theme .reset-button:hover,
+    body.light-theme .log-button:hover,
+    body.light-theme .exit-button:hover {
+      background-color: #ddd; /* Hover effect in light mode */
+    }
+
+    body.light-theme #howto-content {
+      background-color:  #f0f0f0; /* Light background */
+      color:  #222222; /* Light text for readability */
+      padding: 20px;
+      border-radius: 8px; /* Optional: add some border radius for styling */
+    }   
+
+    /* Container backgrounds */
+    body.dark-theme .container {
+      background-color: #1e1e2f;
+    }
+    body.light-theme .container {
+      background-color: #f5f5f5;
+    }
+
+    /* Form elements */
+    body.dark-theme select,
+    body.dark-theme textarea,
+    body.dark-theme input {
+      background-color: #2d2d3e;
+      color: white;
+    }
+    body.light-theme select,
+    body.light-theme textarea,
+    body.light-theme input {
+      background-color: #ffffff;
+      color: #333;
+    }
+
+    /* How it works button and info box in light mode */
+    body.light-theme .info-toggle {
+      background-color: #ddd; /* Lighter background */
+      color: #333; /* Dark text */
+    }
+
+    body.light-theme .info-box {
+      background-color: #f4f4f4; /* Light background for info box */
+      color: #333; /* Dark text */
+      border-left: 5px solid #50fa7b;
+      margin-top: 0px;
+    }
+
+    /* Styling buttons (Process, Reset, Log, Exit) the same as How it works button */
+    body.light-theme .process-button,
+    body.light-theme .howto-button,
+    body.light-theme .reset-button,
+    body.light-theme .log-button,
+    body.light-theme .exit-button,
+    body.light-theme .info-toggle {
+      background-color: #f4f4f4; /* Light background */
+      color: #333; /* Dark text */
+      padding: 10px 20px;
+      border: 1px solid #ccc; /* Border to match other fields */
+      border-radius: 8px; /* Rounded corners */
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    /* Optional: Make sure the buttons are properly aligned in light and dark mode */
+   /* body.light-theme .action-buttons button,
+    body.dark-theme .action-buttons button {
+
+      max-width: 300px;
+      margin: 0 auto;  /* Center buttons if they are smaller than full width */
+    /*}*/
+
+    /* Light theme: Add a box around the Random Key Generator button */
+    body.light-theme #generateKeyBtn {
+      background-color: #f4f4f4;  /* Light background */
+      color: #333;  /* Dark text */
+      padding: 10px 20px;  /* Padding */
+      border: 1px solid #ccc;  /* Border similar to other buttons */
+      border-radius: 8px;  /* Rounded corners */
+      cursor: pointer;  /* Pointer on hover */
+      font-weight: bold;  /* Bold text */
+      margin: 10px 0;  /* Margin to space it out from other elements */
+      width: 200px ;/* Ensure the button width adjusts based on content */
+      height: 43px; /* optional: to perfectly align vertically with input */
+      margin-left: 10px; /* This ensures there is space between the button and key input */
+    }
+
+    /* Hover effect for the Random Key Generator button */
+    body.light-theme #generateKeyBtn:hover {
+      background-color: #ddd;  /* Change background color on hover */
+    }
+
+    /* Additional CSS to add box around the button, similar to other buttons */
+    body.light-theme #keyField button {
+      display: inline-block;
+      border-radius: 8px;  /* Rounded corners for the button container */
+      padding: 5px;
+      border: 1px solid #ccc;  /* Add border to the button box */
+      background-color: #f4f4f4;  /* Same as other button background */
+    }
+
+    body.light-theme #keyField button:hover {
+      background-color: #ddd;  /* Add hover effect like other buttons */
+    }
+    
+
+    body.dark-theme #generateKeyBtn {
+      height: 39px; /* optional: to perfectly align vertically with input */
+      margin-bottom: 1px;
+      margin-left: 10px; /* <-- NEW: adds space between key box and button */
+      display: flex; /* Use flexbox to center the content */
+      justify-content: center; /* Center content horizontally */
+      align-items: center; /* Center content vertically */
+    }
+    
+    body.dark-theme #howto-content {
+      background-color: #292940;
+      color: #f4f4f4; /*  Light text for readability */
+      padding: 20px;
+      border-radius: 8px; /* Optional: add some border radius for styling */
+    }    
+
+    /* Theme toggle button */
+    .theme-toggle {
+      background-color: #f0f0f0;
+      color: #333;
+      padding: 4px 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      border-radius: 4px;
+      width: auto;
+      transition: background-color 0.3s, color 0.3s;
+      float: right;
+      margin-top: 5px;
+    }
+
+    body.light-theme .theme-toggle {
+      background-color: #f4f4f4;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+
+    body.dark-theme .theme-toggle {
+      background-color: #333;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      .theme-toggle-wrapper {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .action-buttons {
+        justify-content: center; /* Center the buttons on smaller screens */
+      }
+
+      .action-buttons button {
+        width: 100%; /* Full width on small screens */
+        margin-bottom: 10px; /* Add space between buttons */
+      }
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+    .shake {
+      animation: shake 0.4s;
+    }
+
+    body.light-theme #keyField input {
+      margin-top: 0%; /* Smaller margin ONLY in light theme */
+    }
+    
+    /* Updated result box background color */
+    #result {
+      margin-top: 0%;
+      background-color: #2d2d3e; /* Same as message and key boxes */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 style="font-size: 2rem; text-align: center; margin-bottom: 5px;">🧠🔐 CyberLearner</h2>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+      <button class="theme-toggle" onclick="toggleTheme()">🌓 Change Theme</button>
+    </div>
+    <label for="message"><strong>Message:</strong></label>
+    <textarea id="message" rows="4" placeholder="Enter your message here..."></textarea>
+
+    <label for="mode"><strong>Mode:</strong></label>
+    <select id="mode" class="form-select" style="width: 100%;" onchange="updateMode();">
+      <option value="" disabled selected>Select Mode</option>
+      <option value="encrypt">Encryption</option>
+      <option value="decrypt">Decryption</option>
+    </select>
+
+
+    <label for="algorithm"><strong>Algorithm:</strong></label>
+    <select id="algorithm" class="form-select" style="width: 100%;" onclick="toggleInfoBox()">
+      <option value="" disabled selected>Select Algorithm</option>
+      <option value="aes">AES</option>
+      <option value="atbash">Atbash Cipher</option>
+      <option value="base64">Base64</option>
+      <option value="caesar">Caesar Cipher</option>
+      <option value="columnar">Columnar Transposition Cipher</option>
+      <option value="des">DES</option>
+      <option value="hex">Hexadecimal Encoding</option>
+      <option value="md5">MD5</option>
+      <option value="morse">Morse Code</option>
+      <option value="otp">One-Time Pad Cipher</option>
+      <option value="playfair">Playfair Cipher</option>
+      <option value="railfence">Rail Fence Cipher</option>
+      <option value="rc4">RC4</option>
+      <option value="reverse">Reverse Cipher</option>
+      <option value="rot13">ROT13 Cipher</option>
+      <option value="sha256">SHA-256</option>
+      <option value="vigenere">Vigenère Cipher</option>
+    </select>    
+
+    <!-- Key Field -->
+    <div id="keyField">
+      <label id="keyLabel" for="key"><strong>Key:</strong></label>
+      <div style="display: flex; align-items: center;">
+        <input type="text" id="key" class="form-select" style="width: 80%;" placeholder="Enter a key" />
+        <button type="button" id="generateKeyBtn" onclick="generateRandomKey()" style="width: 18%;">🎲</button>
+      </div>
+      <div class="note" id="keyNote">Key Entry Guidelines</div>
+       <!-- Permanent note below key note -->
+        <p id="keyReminder">
+          Note: Click on the 🎲 to generate a random key.
+        </p>
+    </div>
+    <div id="noteBox" class="note-box" style="display: none;"></div>
+    <button onclick="toggleInfoBox()" class="info-toggle">Algorithm Description</button>
+    <br>
+    <div id="warningBox" style="display: none; padding: 10px; margin-top: 10px; margin-bottom: 10px; border: 1px solid #ff4d4d; background-color: rgba(255, 77, 77, 0.1); color: #ff4d4d; border-radius: 5px; font-weight: 500;">
+      <!-- Warning message will appear here -->
+    </div>
+    <!-- <div class="info-box" id="infoBox"></div> -->
+    <div id="infoBox" style="display: none;"></div>
+    <button class="process-button" onclick="processMessage()">Process</button>
+
+    <label for="result"><strong>Result:</strong></label>
+    <div id="resultContainer">
+        <textarea id="result" rows="4" readonly placeholder="Please enter a message and select an algorithm."></textarea>
+        <button id="copyResultBtn" onclick="copyResult()">📋</button>
+    </div>
+    <!-- Message when no result -->
+    <div id="resultMessage" style="display: none; color: red; margin-top: 10px; font-size: 14px;"></div>
+
+    <!-- Copy Success Message -->
+    <div id="copyMessage" style="display: none; color: green; margin-top: 10px; font-size: 14px;"></div>
+    
+    <div class="action-buttons">
+      <button class="reset-button" onclick="resetForm()">Reset</button>
+      <button class="log-button" onclick="toggleLog()">Log</button>
+      <button class="howto-button" onclick="toggleHowTo()">User Guide</button>
+      <button class="exit-button" onclick="exitApp()">Exit</button>
+    </div>
+
+    <div id="logBox" class="info-box" style="display: none;"></div>
+  </div>
+
+<!-- The content for user guide (add the 'id="user-guide-section"' to the section) -->
+    <div id="howto-content" style="display: none;">
+      <h3>🚀 Welcome to CyberLearner</h3>
+      <p>
+        <strong>CyberLearner</strong> is an interactive platform crafted for students, cybersecurity enthusiasts, and tech learners to master encryption and decryption techniques. Experiment with a wide variety of algorithms, visualize how encryption works, and practice secure messaging — all in one place!
+      </p>
+      <br><h3>✨ Key Features</h3>
+      <ul>
+        <li><strong>Multiple Encryption Algorithms 🔒:</strong> Supports classic and modern algorithms like AES, DES, RC4, Playfair, Columnar, Rail Fence, OTP, MD5, SHA-256, ROT13, Base64, Atbash, Morse Code, and more.</li><br>
+        <li><strong>Random Key Generation 🎲:</strong> Auto-generate appropriate random keys specific to the selected encryption method (e.g., numeric for Caesar, alphabetic for Vigenère, etc.).</li><br>
+        <li><strong>Light/Dark Theme Mode 🌓:</strong> Easily switch between dark and light themes for better visibility and comfort based on your environment.</li><br>
+        <li><strong>Copy Result 📋:</strong> Copy your encrypted or decrypted result with a single click and paste it wherever needed.</li><br>
+        <li><strong>Detailed Algorithm Info ℹ️:</strong> Get instant, beginner-friendly explanations for each selected encryption or hashing method, including its working principle and usage rules.</li><br>
+        <li><strong>Action Log 📜:</strong> View a detailed history of your encryption and decryption actions to track your activities.</li><br><br>
+        <li><i><strong>Key Reminder 🧠:</strong></i>
+          <ul><i>
+            <br>
+            <li>Always <strong>remember or save the key</strong> used during encryption.</li><br>
+            <li>Each generated random key is unique and <strong>cannot be regenerated exactly the same</strong>.</li><br>
+            <li><strong>Without the original key, decryption will fail!</strong> So make sure to keep it safe.</li></i><br>
+          </ul>
+        </li><br>
+        <li><strong>Exit Feature 🚪:</strong> A simple button to securely exit the application after your session is over.</li><br>
+      </ul>
+
+      <h3>🔍 How to Use CyberLearner</h3>
+      <ul>
+        <li><strong>Step 1 - Message:</strong> Enter the text you want to encrypt or decrypt.</li><br>
+        <li><strong>Step 2 - Mode:</strong> Choose between Encryption or Decryption.</li><br>
+        <li><strong>Step 3 - Algorithm:</strong> Select an encryption or hashing algorithm from the list (e.g., AES, Vigenère, RC4, etc.).</li><br>
+        <li><strong>Step 4 - Key (if needed):</strong> Enter the required key based on the algorithm rules. You can also use the 🎲 button to generate a valid random key.</li><br>
+        <li><strong>Step 5 - Process:</strong> Click the "Process" button to perform the encryption or decryption.</li><br>
+        <li><strong>Step 6 - Copy Result:</strong> Copy the output easily using the 📋 button.</li><br>
+        <li><strong>Step 7 - Log:</strong> View your action history by clicking on the "Log" button.</li><br>
+        <li><strong>Optional - Algorithm Description:</strong> Click "Algorithm Description" to understand how your selected method works.</li><br>
+        <li><strong>Reset:</strong> Start over anytime by clicking the "Reset" button to clear all fields.</li><br>
+        <li><strong>Theme Switch:</strong> Use the "Change Theme" button on the top-right corner to toggle between Light and Dark modes anytime.</li><br>
+        <li><strong>Exit:</strong> Click "Exit" to safely close the CyberLearner tool when done.</li><br>
+      </ul>
+
+      <h3>⚡ Quick Notes</h3>
+      <ul>
+        <li>Not all algorithms require a key (e.g., ROT13, Base64, Atbash, etc.).</li><br>
+        <li>Some algorithms (like MD5 and SHA-256) are hashing methods and cannot be decrypted.</li><br>
+        <li>For the OTP (One-Time Pad) cipher, the key length must exactly match the message length.</li><br>
+        <li>Always check key requirements shown in the "Key Entry Guidelines" below the key field.</li><br>
+      </ul>
+
+      <h3>📚 Learn While You Encrypt!</h3>
+      <p>
+        Each encryption method includes a built-in guide explaining its working so that you don't just use encryption — you understand it. CyberLearner makes learning encryption fun and practical at the same time!
+      </p>
+    </div>
+
+  <script>
+    
+    let historyLog = [];
+    let infoVisible = false;
+    let logVisible = false;
+
+      // Apply saved theme on page load
+    // Toggle between dark and light themes
+    function toggleTheme() {
+      const body = document.body;
+      if (body.classList.contains('dark-theme')) {
+        body.classList.remove('dark-theme');
+        body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light'); // Save theme to local storage
+      } else {
+        body.classList.remove('light-theme');
+        body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark'); // Save theme to local storage
+      }
+    }
+
+    // Apply saved theme on page load
+    document.addEventListener("DOMContentLoaded", () => {
+      // Check if there's a saved theme in local storage
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.add('light-theme');
+      }
+
+      // Add event listener for the toggle button
+      const themeToggleButton = document.getElementById('theme-toggle-btn');
+      themeToggleButton.addEventListener('click', toggleTheme);
+    });
+
+    function copyResult() {
+      const resultField = document.getElementById("result");
+      const resultMessage = document.getElementById("resultMessage");
+      const copyMessage = document.getElementById("copyMessage");
+    
+      // Check if the result field is empty
+      if (resultField.value.trim() === "") {
+        // Display "No result found" message under result box
+        resultMessage.textContent = "No result found. Please enter a message and select an algorithm.";
+        resultMessage.style.display = "block"; // Show "No result found" message
+        copyMessage.style.display = "none"; // Hide "copy result" message if there is no result
+        
+        // Hide the "No result found" message after 10 seconds
+        setTimeout(() => {
+          resultMessage.style.display = "none";
+        }, 10000); // Hide after 10 seconds
+
+        return;
+      } else {
+        // Hide the "No result found" message when there's a result
+        resultMessage.style.display = "none";
+      }
+    
+      // Select the text inside the result field
+      resultField.select();
+      resultField.setSelectionRange(0, 99999); // For mobile devices
+    
+      try {
+        // Try to copy the selected text to clipboard
+        const successful = document.execCommand("copy");
+    
+        if (successful) {
+          // Hide the "No result found" message if it's still showing
+          resultMessage.style.display = "none";
+    
+          // Show the "Result copied to clipboard!" message
+          copyMessage.textContent = "Result copied to clipboard!";
+          copyMessage.style.display = "block"; // Make the success message visible
+    
+          // Optionally hide the success message after a few seconds (to make it disappear after some time)
+          setTimeout(() => {
+            copyMessage.style.display = "none";
+          }, 5000); // Hide after 5 seconds
+        } else {
+          console.error("Copy failed");
+        }
+      } catch (err) {
+        console.error("Copy failed", err);
+      }
+    }
+        
+    
+    const algorithmDetails = { 
+      aes: ` 
+          <br>
+          <strong>AES (Advanced Encryption Standard):</strong><br/> 
+          A symmetric key encryption algorithm using the same key for encryption and decryption.<br/> 
+          - Operates on 128-bit fixed-size blocks.<br/> 
+          - Supports key sizes of 128, 192, and 256 bits.<br/> 
+          <strong>Working:</strong><br/> 
+          1. <strong>Block Cipher:</strong> Operates on 128-bit blocks.<br/> 
+          2. <strong>Key Sizes:</strong> 128, 192, or 256-bit keys.<br/> 
+          3. <strong>Rounds:</strong><br/> 
+          - 10 rounds for 128-bit key.<br/> 
+          - 12 rounds for 192-bit key.<br/> 
+          - 14 rounds for 256-bit key.<br/> 
+          4. <strong>Process Steps:</strong><br/> 
+          - <em>Key Expansion:</em> Generates round keys from the cipher key.<br/> 
+          - <em>Initial Round:</em> AddRoundKey (XOR block with initial key).<br/> 
+          - <em>Main Rounds:</em><br/> 
+            -- SubBytes: Byte substitution using S-box.<br/> 
+            -- ShiftRows: Row-wise shifting of the state array.<br/> 
+            -- MixColumns: Mixing of each column (except in the final round).<br/> 
+            -- AddRoundKey: XOR with round key.<br/> 
+          - <em>Final Round:</em> SubBytes → ShiftRows → AddRoundKey (no MixColumns).<br/> 
+          5. <strong>Output:</strong> Encrypted ciphertext of 128 bits. 
+      `, 
+       atbash: ` 
+          <br>
+          <strong>Atbash Cipher:</strong><br/> 
+          A classical symmetric substitution cipher with a fixed pattern.<br/> 
+          - No separate key; uses a fixed reverse mapping.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Each letter of the alphabet is replaced by its reverse counterpart:<br/> 
+          &nbsp;&nbsp;- A ↔ Z, B ↔ Y, C ↔ X, ..., M ↔ N.<br/> 
+          2. Encryption and decryption are identical processes.<br/> 
+          3. Only supports alphabetic characters.<br/> 
+          4. Not suitable for modern secure communication.<br/> 
+          5. Very simple to implement and decode without any key. 
+      `, 
+      caesar: ` 
+          <br>
+          <strong>Caesar Cipher:</strong><br/> 
+          A classical symmetric substitution cipher using a fixed shift.<br/> 
+          - Uses a single integer key as the shift value.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Shifts each letter by a fixed number of positions in the alphabet.<br/> 
+          2. Example with key 3:<br/> 
+          &nbsp;&nbsp;- A → D, B → E, C → F, ..., X → A, Y → B, Z → C.<br/> 
+          3. Encryption: Shift each letter forward by the key value.<br/> 
+          4. Decryption: Shift each letter backward by the same key value.<br/> 
+          5. Key is an integer between 1 and 25.<br/> 
+          6. Simple and fast but insecure for modern applications due to small key space. 
+      `, 
+      base64: `
+          <br>
+          <strong>Base64 Encoding:</strong><br/> 
+          A method for encoding binary data into ASCII text format.<br/> 
+          - Not a cryptographic algorithm; it is an encoding scheme.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Converts binary data into ASCII text.<br/> 
+          2. Takes 3 bytes (24 bits) of input and splits them into 4 groups of 6 bits.<br/> 
+          3. Each 6-bit group is mapped to a character in the Base64 index table (64 characters: A–Z, a–z, 
+          0–9, +, /).<br/> 
+          4. If the input is not a multiple of 3 bytes, padding with '=' is added.<br/> 
+          5. Mainly used for data transfer over text-based protocols (e.g., email, JSON, XML).<br/> 
+          6. Not secure for encryption, as it is easily reversible. 
+      `, 
+      columnar: `
+          <br> 
+          <strong>Columnar Transposition Cipher:</strong><br/> 
+          A transposition cipher that uses a keyword or numerical key for column arrangement.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Write the plaintext row-wise into a grid based on the length of the key.<br/> 
+          2. Rearrange the columns according to the alphabetical or numerical order of the key.<br/> 
+          3. Form ciphertext by reading columns in the new order from top to bottom.<br/> 
+          4. For decryption, write the ciphertext column-wise using the same key order and then read 
+          row-wise.<br/> 
+          5. It is a permutation cipher, not substitution-based.<br/> 
+          6. More secure than simple substitution but still vulnerable to frequency analysis. 
+      `, 
+      des: ` 
+          <br>
+          <strong>DES (Data Encryption Standard):</strong><br/> 
+          A symmetric key cryptographic algorithm that uses the same key for both encryption and 
+          decryption.<br/> 
+          - Key size: 56 bits (actual key is 64 bits, but 8 bits are used for parity).<br/> 
+          <strong>Working:</strong><br/> 
+          1. DES is a block cipher that operates on 64-bit blocks of plaintext.<br/> 
+          2. The plaintext is divided into two halves: left and right.<br/> 
+          3. It performs 16 rounds of complex operations, including substitution and permutation.<br/> 
+          4. Each round uses a different 48-bit subkey generated from the main key (key schedule).<br/> 
+          <strong>Steps involved:</strong><br/> 
+          - Initial Permutation (IP)<br/> 
+          - 16 rounds of Feistel structure (including expansion, XOR with subkey, substitution using S
+          boxes, and permutation)<br/> 
+          - Final Permutation (inverse of IP)<br/> 
+          5. Output is a 64-bit ciphertext block.<br/> 
+          6. Though widely used historically, DES is now considered insecure due to its short key length 
+          and vulnerability to brute-force attacks. 
+      `, 
+      hex: ` 
+          <br>
+          <strong>Hexadecimal Encoding:</strong><br/> 
+          Not a key-based encryption method; it is an encoding scheme, not a cryptographic 
+          algorithm.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Converts binary data into a readable base-16 (hex) format.<br/> 
+          2. Each byte (8 bits) is split into two 4-bit nibbles.<br/> 
+          3. Each 4-bit nibble is represented by a hexadecimal digit (0–9 and A–F).<br/> 
+          4. Example:<br/> 
+          - Binary 01001101 → Hex 4D<br/> 
+          5. Commonly used in computing to represent binary data in a compact and human-readable 
+          form.<br/> 
+          6. It is not encryption — easy to decode and provides no security.<br/> 
+          7. Often used in hashes, color codes, memory addresses, etc. 
+      `, 
+      md5: ` 
+          <br>
+          <strong>MD5 (Message Digest Algorithm 5):</strong><br/> 
+          No key is used; MD5 is a hashing algorithm, not an encryption method.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Takes input of any length and produces a fixed 128-bit (16-byte) hash value.<br/> 
+          2. Commonly represented as a 32-character hexadecimal string.<br/> 
+          3. Input is processed in 512-bit blocks.<br/> 
+          4. Follow these steps:<br/> 
+          - Padding the message to make its length a multiple of 512 bits.<br/> 
+          - Dividing the input into blocks.<br/> 
+          - Initializing buffer variables (A, B, C, D).<br/> 
+          - Processing each block with 64 operations using nonlinear functions, shifts, and modular 
+          addition.<br/> 
+          5. The final output is the concatenation of the modified buffer values.<br/> 
+          6. Commonly used for checksums, data integrity verification, and digital signatures.<br/> 
+          7. Not secure for cryptographic use due to vulnerability to collision attacks. 
+      `, 
+      morse: `
+          <br> 
+          <strong>Morse Code:</strong><br/> 
+          No cryptographic key is used; it is a communication encoding scheme, not an encryption 
+          algorithm.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Represents letters, digits, and punctuation using sequences of dots (.) and dashes (-).<br/> 
+          2. Each character is encoded with a unique combination of dots and dashes.<br/> 
+          - Example: A = .−, B = −..., C = −.−., 1 = .−−−−<br/> 
+          3. Characters are separated by spaces, and words are separated by slashes or longer 
+          pauses.<br/> 
+          4. Originally designed for telegraph systems and later used in radio communication.<br/> 
+          5. Can be transmitted using sound, light, or visual signals.<br/> 
+          6. It is not secure for encryption; it is purely for encoding and transmitting messages. 
+      `, 
+      otp: ` 
+          <br>
+          <strong>One-Time Pad Cipher:</strong><br/> 
+          A symmetric key cipher that uses a random key as long as the plaintext and is used only 
+          once.<br/> 
+          <strong>Working:</strong><br/> 
+          1. A truly random key (pad) is generated, equal in length to the plaintext.<br/> 
+          2. Each character (or bit) of the plaintext is combined with the corresponding character of the 
+          key using XOR (for binary) or modular addition (for letters).<br/> 
+          <strong>Encryption:</strong><br/> 
+          - Ciphertext = Plaintext ⊕ Key (for binary)<br/> 
+          <strong>Decryption:</strong><br/> 
+          - Plaintext = Ciphertext ⊕ Key (same key must be used)<br/> 
+          3. It offers perfect secrecy if the key is:<br/> 
+          - Truly random<br/> 
+          - Used only once<br/> 
+          - Kept completely secret<br/> 
+          4. Highly secure, but impractical due to key distribution and management challenges. 
+      `, 
+      playfair: `
+          <br> 
+          <strong>Playfair Cipher:</strong><br/> 
+          A symmetric key cipher that uses a keyword to generate a 5×5 matrix for encryption and 
+          decryption.<br/> 
+          <strong>Working:</strong><br/> 
+          1. A 5×5 matrix is created using a keyword (duplicate letters removed, I and J treated as the 
+          same letter).<br/> 
+          2. The plaintext is divided into digraphs (pairs of two letters). If a pair has the same letters, 
+          insert a filler letter like ‘X’.<br/> 
+          3. Each pair is encrypted based on its position in the matrix:<br/> 
+          - Same row: Replace each letter with the one to its right (wrap around to the start if 
+          needed).<br/> 
+          - Same column: Replace each letter with the one below it.<br/> 
+          - Rectangle: Replace each letter with the one in the same row but in the column of the other 
+          letter.<br/> 
+          <strong>Decryption:</strong><br/> 
+          - Decryption follows the reverse of the encryption rules.<br/> 
+          4. More secure than simple substitution ciphers due to digraph encryption.<br/> 
+          5. Vulnerable to frequency analysis and not suitable for modern cryptography. 
+      `, 
+      railfence: `
+          <br> 
+          <strong>Rail Fence Cipher:</strong><br/> 
+          A symmetric key cipher that uses a numeric key indicating the number of rails (rows).<br/> 
+          <strong>Working:</strong><br/> 
+          1. The plaintext is written in a zigzag pattern across multiple "rails" (rows), determined by the 
+          key.<br/> 
+          2. Example with 3 rails:<br/> 
+          - Plaintext: "HELLO WORLD"<br/> 
+          - Zigzag form:<br/> 
+          H . . . O . . . R .<br/> 
+          . E . L . W . L . D<br/> 
+          . . L . . . O . .<br/> 
+          3. The ciphertext is formed by reading the rows sequentially.<br/> 
+          4. Decryption involves reconstructing the zigzag pattern using the number of rails and reading it 
+          back diagonally.<br/> 
+          5. It is a transposition cipher — no substitution of characters.<br/> 
+          6. Easy to implement, but not secure for modern encryption needs. 
+      `, 
+      rc4: ` 
+          <br>
+          <strong>RC4 (Rivest Cipher 4):</strong><br/> 
+          A symmetric key cipher that uses a variable-length key (typically 40 to 2048 bits).<br/> 
+          <strong>Working:</strong><br/> 
+          1. RC4 is a stream cipher that encrypts data one byte at a time.<br/> 
+          2. It uses two main algorithms:<br/> 
+          - Key Scheduling Algorithm (KSA): Initializes a 256-byte state array (S) using the key.<br/> 
+          - Pseudo-Random Generation Algorithm (PRGA): Generates a pseudo-random keystream from 
+          the state array.<br/> 
+          3. The plaintext is encrypted by XORing it with the keystream.<br/> 
+          4. Decryption uses the same keystream to XOR with ciphertext and recover plaintext.<br/> 
+          5. Simple and fast in both software and hardware.<br/> 
+          6. Once widely used in SSL/TLS and WEP, but now considered insecure due to biases in the 
+          keystream and vulnerabilities to attacks. 
+      `, 
+      reverse: `
+          <br> 
+          <strong>Reverse Cipher:</strong><br/> 
+          A simple symmetric cipher that does not require a key.<br/> 
+          <strong>Working:</strong><br/> 
+          1. The plaintext is simply reversed to produce the ciphertext.<br/> 
+          - Example: HELLO → OLLEH<br/> 
+          2. Decryption is done by reversing the ciphertext back to its original form.<br/> 
+          3. It does not use any mathematical operations or complex logic.<br/> 
+          4. Extremely easy to implement and decode.<br/> 
+          5. Not secure — offers no real cryptographic protection.<br/> 
+          6. Often used as a teaching tool or part of more complex ciphers. 
+      `, 
+      rot13: `
+          <br> 
+          <strong>ROT13 Cipher:</strong><br/> 
+          A symmetric key cipher that uses a fixed 13-character shift in the alphabet.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Each letter in the plaintext is replaced by the letter 13 positions after it in the alphabet.<br/> 
+          - Example: A ↔ N, B ↔ O, C ↔ P, ..., M ↔ Z<br/> 
+          2. Since the alphabet has 26 letters, applying ROT13 twice returns the original text.<br/> 
+          3. Only letters are transformed; digits and symbols remain unchanged.<br/> 
+          4. Case is usually preserved (uppercase ↔ uppercase, lowercase ↔ lowercase).<br/> 
+          5. Commonly used for obfuscation, not for secure communication.<br/> 
+          6. Very simple and reversible; offers no real encryption security. 
+      `, 
+      sha256: `
+          <br> 
+          <strong>SHA-256 (Secure Hash Algorithm 256):</strong><br/> 
+          A cryptographic hash function with no key usage.<br/> 
+          <strong>Working:</strong><br/> 
+          1. Takes an input message of any length and produces a fixed 256-bit (32-byte) hash value.<br/> 
+          2. Commonly represented as a 64-character hexadecimal string.<br/> 
+          3. Preprocessing involves:<br/> 
+          - Padding the message to a multiple of 512 bits<br/> 
+          - Appending the message length<br/> 
+          4. The input is divided into 512-bit blocks, each processed through 64 rounds of 
+          operations.<br/> 
+          5. Uses bitwise operations, modular additions, and logical functions.<br/> 
+          6. The final hash is formed by combining eight 32-bit words.<br/> 
+          7. Designed to be one-way, collision-resistant, and fast.<br/> 
+          8. Widely used in blockchain, digital signatures, and data integrity checks.<br/> 
+          9. Part of the SHA-2 family and currently considered secure. 
+      `, 
+      vigenere: `
+          <br> 
+          <strong>Vigenère Cipher:</strong><br/> 
+          A symmetric key cipher using a repeating keyword.<br/> 
+          <strong>Working:</strong><br/> 
+          1. A keyword is repeated to match the length of the plaintext.<br/> 
+          2. Each letter of the plaintext is shifted forward in the alphabet by the position of the 
+          corresponding keyword letter.<br/> 
+          - Example: Plaintext = "ATTACK", Key = "LEMON" → Effective Key = "LEMONL"<br/> 
+          3. The shift is based on the alphabetical position of the keyword letter (A=0, B=1, ..., Z=25).<br/> 
+          4. Encryption formula:<br/> 
+          - Ciphertext[i] = (Plaintext[i] + Key[i]) mod 26<br/> 
+          5. Decryption formula:<br/> 
+          - Plaintext[i] = (Ciphertext[i] - Key[i] + 26) mod 26<br/> 
+          6. More secure than Caesar Cipher due to multiple shifting patterns.<br/> 
+          7. Still vulnerable if the key is short or reused (e.g., through Kasiski examination). 
+      `, 
+  };
+  
+    function toggleInfoBox() {
+      var algorithm = document.getElementById("algorithm").value;
+      var infoBox = document.getElementById("infoBox");
+
+      // Always update the content first
+      if (algorithm === "") {
+        infoBox.innerHTML = "<p style='color: red;'>Please select an algorithm!</p>";
+      } else if (algorithmDetails[algorithm]) {
+        infoBox.innerHTML = algorithmDetails[algorithm];
+      } else {
+        infoBox.innerHTML = "<p>Algorithm description not available.</p>";
+      }
+
+      // Now toggle visibility
+      if (infoBox.style.display === "none" || infoBox.style.display === "") {
+        infoBox.style.display = "block";
+      } else {
+        infoBox.style.display = "none";
+      }
+    }
+  
+    // Add event listener to algorithm dropdown
+   /* document.getElementById("algorithm").addEventListener("change", function() {
+      resetKeyField();
+    });*/
+    
+    // Function to reset the key field when the algorithm changes
+    function resetKeyField() {
+      const keyInput = document.getElementById("key");
+      const keyNote = document.getElementById("keyNote");
+
+      // Clear the key input field
+      keyInput.value = "";
+
+      // Optionally clear any messages or notes associated with the key
+      keyNote.style.color = ""; // Reset to default color
+      keyNote.textContent = "Key Entry Guidelines"; // Resetting key guidelines text
+    }
+
+    async function processMessage() {
+      const message = document.getElementById("message").value.trim();
+      const key = document.getElementById("key").value.trim();
+      const mode = document.getElementById("mode").value;
+      const algorithm = document.getElementById("algorithm").value;
+      const resultField = document.getElementById("result");
+      const keyField = document.getElementById("keyField");
+      const resultMessage = document.getElementById("resultMessage");
+
+      // Clear any previous result message
+      resultMessage.style.display = "none";
+
+      clearWarning();
+
+      if (!message) {
+        showWarning("⚠️ Please enter a message.");
+        return;
+      }
+      if (!mode) {
+        showWarning("⚠️ Please select a mode (Encrypt/Decrypt).");
+        return;
+      }
+      if (!algorithm) {
+        showWarning("⚠️ Please select an algorithm.");
+        return;
+      }
+      if (keyField.style.display !== "none" && key === "") {
+        showWarning("⚠️ Please enter a key.");
+        return;
+      }
+          // Check if the key is empty
+/*   if (key === "") {
+      // Show the key selection message
+      document.getElementById("keyMessage").style.display = "block";
+      return; // Prevent the process from continuing without a key
+  }*/
+    
+      // --- Your original processing code starts from here ---    
+
+      if (algorithm === "caesar") {
+        if (!/^\d+$/.test(key)) {
+          alert("Caesar Cipher requires a numeric key (shift).");
+          return;
+        }
+        resultField.value = caesarCipher(message, parseInt(key), mode === "encrypt");
+      } else if (algorithm === "aes") {
+        if (!/^[a-zA-Z]+$/.test(key)) {
+          alert("AES requires an alphabetic key.");
+          return;
+        }
+        if (mode === "encrypt") {
+          resultField.value = await aesEncrypt(message, key);
+        } else {
+          resultField.value = await aesDecrypt(message, key);
+        }
+      } else if (algorithm === "reverse") {
+        resultField.value = reverseCipher(message);
+      } else if (algorithm === "vigenere") {
+        if (!/^[a-zA-Z]+$/.test(key)) {
+          alert("Vigenère Cipher requires an alphabetic key.");
+          return;
+        }
+        resultField.value = vigenereCipher(message, key, mode === "encrypt");
+      } else if (algorithm === "rot13") {
+        resultField.value = rot13Cipher(message);
+      } else if (algorithm === "base64") {
+        resultField.value = (mode === "encrypt")
+          ? btoa(unescape(encodeURIComponent(message)))
+          : decodeBase64(message);
+      } else if (algorithm === "playfair") {
+        if (!/^[a-zA-Z]+$/.test(key)) {
+          alert("Playfair Cipher requires an alphabetic key.");
+          return;
+        }
+        resultField.value = (mode === "encrypt")
+          ? playfairEncrypt(message, key)
+          : playfairDecrypt(message, key);
+      } else if (algorithm === "railfence") {
+        const rails = parseInt(key);
+        if (isNaN(rails) || rails < 2) {
+          alert("Rail Fence Cipher requires a numeric key greater than 1.");
+          return;
+        }
+        resultField.value = railFenceCipher(message, rails, mode === "encrypt");
+      } else if (algorithm === "columnar") {
+        if (!/^[a-zA-Z]+$/.test(key)) {
+          alert("Columnar Transposition Cipher requires an alphabetic key.");
+          return;
+        }
+        resultField.value = columnarTranspositionCipher(message, key, mode === "encrypt");
+      } else if (algorithm === "md5") {
+        resultField.value = md5(message);
+      } else if (algorithm === "sha256") {
+        resultField.value = CryptoJS.SHA256(message).toString(CryptoJS.enc.Hex);
+      } else if (algorithm === "hex") {
+        resultField.value = (mode === "encrypt")
+          ? toHex(message)
+          : fromHex(message);
+      } else if (algorithm === "morse") {
+        resultField.value = (mode === "encrypt")
+          ? textToMorse(message)
+          : morseToText(message);
+      } else if (algorithm === "atbash") {
+        resultField.value = atbashCipher(message);
+      } else if (algorithm === "otp") {
+        if (key.length !== message.length || !/^[a-zA-Z]+$/.test(key)) {
+          alert("Key must be same length as message and only alphabetic.");
+          return;
+        }
+        resultField.value = otpCipher(message, key, mode === "encrypt");
+      } else if (algorithm === "rc4") {        
+        if (!/^[a-zA-Z0-9]+$/.test(key)) {
+          alert("RC4 requires a alphanumeric key.");
+        return;
+        }
+        resultField.value = rc4Cipher(message, key);
+      } else if (algorithm === "des") {
+        if (key.length < 8 || !/^[a-zA-Z0-9]+$/.test(key)) {
+          alert("DES requires a alphanumeric key consisting of 8 or more characters.");
+          return;
+        }
+        if (mode === "encrypt") {
+          resultField.value = CryptoJS.DES.encrypt(message, key).toString();
+        } else {
+          try {
+            const decrypted = CryptoJS.DES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+            if (!decrypted) {
+              throw new Error("Failed decryption"); // Force the catch block
+            }
+            resultField.value = decrypted;
+          } catch (e) {
+            alert("DES decryption failed. Possibly due to an incorrect key or invalid ciphertext.");
+            resultField.value = "";
+          }
+        }
+      }
+      
+      historyLog.push({
+        message,
+        key,
+        mode,
+        algorithm,
+        result: resultField.value
+      });
+    }
+    
+    let warningTimeout; // declared globally to manage the time out
+
+    function showWarning(message) {
+      const warningBox = document.getElementById("warningBox");
+      warningBox.innerText = message;
+      warningBox.style.display = "block";
+
+        // Trigger shake animation
+      warningBox.classList.remove("shake"); // Reset first if already shaking
+      void warningBox.offsetWidth; // Trick to reflow and restart animation
+      warningBox.classList.add("shake"); // Add shake again
+
+        // Clear any existing hide timeout first
+      clearTimeout(warningTimeout);
+
+        // Set a new timeout to auto-hide warning after 10 seconds
+      warningTimeout = setTimeout(() => {
+        clearWarning();
+      }, 10000);
+    }
+    
+    function clearWarning() {
+      const warningBox = document.getElementById("warningBox");
+      warningBox.innerText = "";
+      warningBox.style.display = "none";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("message").addEventListener("input", clearWarning);
+      document.getElementById("key").addEventListener("input", clearWarning);
+      document.getElementById("mode").addEventListener("change", clearWarning);
+      document.getElementById("algorithm").addEventListener("change", clearWarning);
+    });    
+
+    
+      /*random key generation code*/
+      // Function to generate random key based on the selected algorithm
+    function generateRandomKey() {
+      const algorithm = document.getElementById("algorithm").value;
+      const keyInput = document.getElementById("key");
+      const keyNote = document.getElementById("keyNote");
+
+      if (!algorithm) {
+        // No algorithm selected, show warning inside keyNote
+        keyNote.textContent = "Please select an algorithm first!";
+        keyNote.style.color = "red"; 
+        alert("Please select an algorithm before generating a key!"); // Popup alert
+        return;
+      } //else {
+        // When algorithm is selected, show normal key note
+        //keyNote.style.color = '#ffb86c'; // Reset to default color
+        /*keyNote.textContent = "Key Entry Guidelines"; // (Or you can set per algorithm if you want)*/
+      //}
+
+      let randomKey = "";
+
+      switch (algorithm) {
+        case "aes":
+          randomKey = generateRandomString(16); // AES: 16-character alphabetic string
+          break;
+        case "caesar":
+          randomKey = Math.floor(Math.random() * 25) + 1; // Caesar: Random number (1-25)
+          break;
+        case "vigenere":
+          randomKey = generateRandomString(10); // Vigenère: 10-character alphabetic string
+          break;
+        case "playfair":
+        case "columnar":
+          randomKey = generateRandomString(10); // Playfair/Columnar: 10-character alphabetic string
+          break;
+        case "railfence":
+          randomKey = Math.floor(Math.random() * 9) + 2; // Rail Fence: Random number (>= 2)
+          break;
+        case "otp":
+          const messageLength = document.getElementById("message").value.length;
+          randomKey = generateRandomString(messageLength); // OTP: Same length as message
+          break;
+        case "rc4":
+        case "des":
+          randomKey = generateRandomAlphanumericString(16); // RC4/DES: 16-character alphanumeric string
+          break;
+        case "md5":
+        case "sha256":
+        case "hex":
+        case "morse":
+        case "atbash":
+        case "base64":
+        case "reverse":
+        case "rot13":
+          randomKey = ""; // These algorithms don't require a key
+          break;
+        default:
+          randomKey = "";
+          break;
+      }
+      // Set the random key to the input field
+      keyInput.value = randomKey;
+      // 🔥 ADD THIS LINE to re-update key label and key note 🔥
+      updateKeyField();
+    }
+
+    // Helper function to generate a random alphabetic string of a given length
+    function generateRandomString(length) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    // Helper function to generate a random alphanumeric string of a given length
+    function generateRandomAlphanumericString(length) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+
+    function caesarCipher(text, shift, encrypt = true) {
+      shift = encrypt ? shift : -shift;
+      return text.split('').map(char =>
+        String.fromCharCode((char.charCodeAt(0) + shift + 256) % 256)
+      ).join('');
+    }
+
+    function reverseCipher(text) {
+      return text.split('').reverse().join('');
+    }
+
+    function vigenereCipher(text, key, encrypt = true) {
+      let result = '';
+      key = key.toUpperCase();
+      text = text.toUpperCase();
+    
+      for (let i = 0, j = 0; i < text.length; i++) {
+        let c = text.charCodeAt(i);
+        if (c >= 65 && c <= 90) {
+          let k = key.charCodeAt(j % key.length) - 65;
+          if (!encrypt) k = -k;
+          let shifted = ((c - 65 + k + 26) % 26) + 65;
+          result += String.fromCharCode(shifted);
+          j++;
+        } else {
+          result += text[i];
+        }
+      }
+      return result;
+    }
+    
+    function rot13Cipher(text) {
+      return text.replace(/[a-zA-Z]/g, c =>
+        String.fromCharCode(
+          c.charCodeAt(0) + (c.toLowerCase() < 'n' ? 13 : -13)
+        )
+      );
+    }
+    
+    function decodeBase64(base64) {
+      try {
+        return decodeURIComponent(escape(atob(base64)));
+      } catch (e) {
+        return "Invalid Base64 string.";
+      }
+    }
+    
+    // Global variable to track padding positions
+    let insertedXPositions = [];
+
+    // ✅ Playfair Cipher - Encryption
+    function playfairEncrypt(plaintext, key) {
+      const matrix = generatePlayfairMatrix(key);
+      plaintext = plaintext.toUpperCase().replace(/J/g, "I");
+
+      // Save space positions to restore later
+      const spacePositions = [];
+      for (let i = 0; i < plaintext.length; i++) {
+        if (plaintext[i] === " ") spacePositions.push(i);
+      }
+
+      plaintext = plaintext.replace(/[^A-Z]/g, "");
+
+      let pairs = [];
+      insertedXPositions = []; // Reset for current encryption
+
+      for (let i = 0; i < plaintext.length; i += 2) {
+        let a = plaintext[i];
+        let b = plaintext[i + 1];
+
+        if (!b) {
+          b = "X";
+          insertedXPositions.push(pairs.length); // last pair index
+        } else if (a === b) {
+          b = "X";
+          insertedXPositions.push(pairs.length); // index where we inserted X between duplicates
+          i--; // redo with b as the next letter
+        }
+
+        pairs.push([a, b]);
+      }
+
+      let result = "";
+      for (const [a, b] of pairs) {
+        const [r1, c1] = findInMatrix(matrix, a);
+        const [r2, c2] = findInMatrix(matrix, b);
+        if (r1 === r2) {
+          result += matrix[r1][(c1 + 1) % 5];
+          result += matrix[r2][(c2 + 1) % 5];
+        } else if (c1 === c2) {
+          result += matrix[(r1 + 1) % 5][c1];
+          result += matrix[(r2 + 1) % 5][c2];
+        } else {
+          result += matrix[r1][c2];
+          result += matrix[r2][c1];
+        }
+      }
+
+      // Re-insert spaces
+      for (let pos of spacePositions) {
+        result = result.slice(0, pos) + " " + result.slice(pos);
+      }
+
+      return result;
+    }
+
+    // ✅ Playfair Cipher - Decryption
+    function playfairDecrypt(ciphertext, key) {
+      const matrix = generatePlayfairMatrix(key);
+      ciphertext = ciphertext.toUpperCase().replace(/J/g, "I");
+
+      const spacePositions = [];
+      for (let i = 0; i < ciphertext.length; i++) {
+        if (ciphertext[i] === " ") spacePositions.push(i);
+      }
+
+      ciphertext = ciphertext.replace(/[^A-Z]/g, "");
+
+      let pairs = [];
+      for (let i = 0; i < ciphertext.length; i += 2) {
+        pairs.push([ciphertext[i], ciphertext[i + 1]]);
+      }
+
+      let result = "";
+      for (let idx = 0; idx < pairs.length; idx++) {
+        const [a, b] = pairs[idx];
+        const [r1, c1] = findInMatrix(matrix, a);
+        const [r2, c2] = findInMatrix(matrix, b);
+
+        if (r1 === r2) {
+          result += matrix[r1][(c1 + 4) % 5];
+          result += matrix[r2][(c2 + 4) % 5];
+        } else if (c1 === c2) {
+          result += matrix[(r1 + 4) % 5][c1];
+          result += matrix[(r2 + 4) % 5][c2];
+        } else {
+          result += matrix[r1][c2];
+          result += matrix[r2][c1];
+        }
+      }
+
+      // Remove only the inserted 'X' characters
+      let cleaned = "";
+      for (let i = 0; i < result.length; i += 2) {
+        let a = result[i];
+        let b = result[i + 1];
+
+        const pairIndex = i / 2;
+        if (insertedXPositions.includes(pairIndex)) {
+          // This was a padding X
+          cleaned += a; // skip the inserted X
+        } else {
+          cleaned += a + (b || "");
+        }
+      }
+
+      // Re-insert spaces
+      for (let pos of spacePositions) {
+        cleaned = cleaned.slice(0, pos) + " " + cleaned.slice(pos);
+      }
+
+      return cleaned;
+    }
+
+    // ✅ Generate Playfair Matrix
+    function generatePlayfairMatrix(key) {
+      key = key.toUpperCase().replace(/J/g, "I");
+      let matrix = [];
+      let used = {};
+      let finalKey = "";
+
+      for (let char of key + "ABCDEFGHIKLMNOPQRSTUVWXYZ") {
+        if (/[A-Z]/.test(char) && !used[char]) {
+          finalKey += char;
+          used[char] = true;
+        }
+      }
+
+      for (let i = 0; i < 25; i += 5) {
+        matrix.push(finalKey.slice(i, i + 5).split(""));
+      }
+
+      return matrix;
+    }
+
+    // ✅ Find Character in Matrix
+    function findInMatrix(matrix, char) {
+      for (let r = 0; r < 5; r++) {
+        const c = matrix[r].indexOf(char);
+        if (c !== -1) return [r, c];
+      }
+      return [-1, -1];
+    }
+    
+    // ✅ Rail Fence Cipher
+    function railFenceCipher(text, rails, encrypt = true) {
+      if (encrypt) {
+        let fence = Array.from({ length: rails }, () => []);
+        let rail = 0, dir = 1;
+        for (let char of text) {
+          fence[rail].push(char);
+          rail += dir;
+          if (rail === 0 || rail === rails - 1) dir *= -1;
+        }
+        return fence.flat().join("");
+      } else {
+        let len = text.length;
+        let fence = Array.from({ length: rails }, () => Array(len).fill(null));
+        let rail = 0, dir = 1;
+
+        for (let i = 0; i < len; i++) {
+          fence[rail][i] = "*";
+          rail += dir;
+          if (rail === 0 || rail === rails - 1) dir *= -1;
+        }
+
+        let index = 0;
+        for (let r = 0; r < rails; r++)
+          for (let c = 0; c < len; c++)
+            if (fence[r][c] === "*")
+              fence[r][c] = text[index++];
+
+        let result = "", r = 0, d = 1;
+        for (let c = 0; c < len; c++) {
+          result += fence[r][c];
+          r += d;
+          if (r === 0 || r === rails - 1) d *= -1;
+        }
+        return result;
+      }
+    }
+
+    // ✅ Columnar Transposition Cipher
+    function columnarTranspositionCipher(text, key, encrypt = true) {
+      key = key.toUpperCase().replace(/[^A-Z]/g, "");
+      let order = [...key].map((char, i) => [char, i]).sort();
+      let perm = order.map(pair => pair[1]);
+
+      let cols = key.length;
+      let rows = Math.ceil(text.length / cols);
+      let padded = text.padEnd(rows * cols, " ");
+      let grid = Array.from({ length: rows }, (_, i) =>
+        padded.slice(i * cols, (i + 1) * cols).split("")
+      );
+
+      if (encrypt) {
+        return perm.map(i => grid.map(row => row[i]).join("")).join("");
+      } else {
+        let grid2 = Array.from({ length: rows }, () => Array(cols).fill(""));
+        let i = 0;
+        for (let colIndex of perm) {
+          for (let row = 0; row < rows; row++) {
+            grid2[row][colIndex] = text[i++] || " ";
+          }
+        }
+        return grid2.flat().join("").trim();
+      }
+    }
+
+    // ✅ MD5 Hash
+    function md5(text) {
+      return CryptoJS.MD5(text).toString();
+    }
+
+    // ✅ SHA-256 Hash
+    function sha256Hash(text) {
+      return CryptoJS.SHA256(text).toString(CryptoJS.enc.Hex);
+    }
+
+    // ✅ Hexadecimal Encode/Decode
+    function toHex(str) {
+      return str.split("")
+        .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join("");
+    }
+    
+    function fromHex(hex) {
+      if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length % 2 !== 0) {
+        return "Invalid Hex string.";
+      }
+    
+      let result = "";
+      for (let i = 0; i < hex.length; i += 2) {
+        result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      }
+      return result;
+    }
+    
+
+    // ✅ Morse Code
+    const morseMap = {
+      A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.",
+      G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..",
+      M: "--", N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.",
+      S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+      Y: "-.--", Z: "--..",
+      0: "-----", 1: ".----", 2: "..---", 3: "...--", 4: "....-",
+      5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----.",
+      " ": "/"
+    };
+    const reverseMorseMap = Object.fromEntries(Object.entries(morseMap).map(([k, v]) => [v, k]));
+
+    function textToMorse(text) {
+      return [...text.toUpperCase()].map(c => morseMap[c] || "").join(" ");
+    }
+
+    function morseToText(morse) {
+      return morse.trim().split(/\s+/).map(code => reverseMorseMap[code] || "").join("");
+    }
+
+    // ✅ Atbash Cipher
+    function atbashCipher(text) {
+      return text.replace(/[a-zA-Z]/g, c => {
+        const base = c <= "Z" ? 65 : 97;
+        return String.fromCharCode(base + 25 - (c.charCodeAt(0) - base));
+      });
+    }
+
+
+    async function aesEncrypt(text, key) {
+      const enc = new TextEncoder();
+      const keyData = enc.encode(key.padEnd(32, '0').slice(0, 32));
+      const cryptoKey = await crypto.subtle.importKey('raw', keyData, 'AES-GCM', false, ['encrypt']);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, enc.encode(text));
+      return btoa(String.fromCharCode(...iv) + String.fromCharCode(...new Uint8Array(encrypted)));
+    }
+
+    async function aesDecrypt(base64, key) {
+      const raw = atob(base64);
+      const iv = new Uint8Array([...raw].slice(0, 12).map(c => c.charCodeAt(0)));
+      const data = new Uint8Array([...raw].slice(12).map(c => c.charCodeAt(0)));
+      const enc = new TextEncoder();
+      const keyData = enc.encode(key.padEnd(32, '0').slice(0, 32));
+      const cryptoKey = await crypto.subtle.importKey('raw', keyData, 'AES-GCM', false, ['decrypt']);
+      try {
+        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, data);
+        const dec = new TextDecoder();
+        return dec.decode(decrypted);
+      } catch (e) {
+        alert("Decryption failed. Possibly due to incorrect key or corrupted input.");
+        return "";
+      }
+    }
+
+    function otpCipher(text, key, encrypt = true) {
+      text = text.toUpperCase();
+      key = key.toUpperCase();
+      let result = "";
+    
+      for (let i = 0; i < text.length; i++) {
+        let m = text.charCodeAt(i) - 65;
+        let k = key.charCodeAt(i) - 65;
+        let r = encrypt ? (m + k) % 26 : (m - k + 26) % 26;
+        result += String.fromCharCode(r + 65);
+      }
+    
+      return result;
+    }
+    
+    function rc4Cipher(text, key) {
+      let s = [], j = 0, x, res = "";
+      for (let i = 0; i < 256; i++) s[i] = i;
+      for (let i = 0; i < 256; i++) {
+        j = (j + s[i] + key.charCodeAt(i % key.length)) % 256;
+        [s[i], s[j]] = [s[j], s[i]];
+      }
+      i = j = 0;
+      for (let y = 0; y < text.length; y++) {
+        i = (i + 1) % 256;
+        j = (j + s[i]) % 256;
+        [s[i], s[j]] = [s[j], s[i]];
+        x = s[(s[i] + s[j]) % 256];
+        res += String.fromCharCode(text.charCodeAt(y) ^ x);
+      }
+      return res;
+    }
+    
+
+    function resetForm() {
+      document.getElementById("message").value = "";
+      document.getElementById("key").value = "";
+      document.getElementById("mode").value = "";
+      document.getElementById("algorithm").value = "";
+      document.getElementById("result").value = "";
+
+      var content = document.getElementById("howto-content");
+      content.style.display = "none"; // Hide content when reset
+      // Reset key field formatting and placeholder text
+      const keyInput = document.getElementById("key");
+      keyInput.placeholder = "Enter a key"; // Reset placeholder text
+      keyInput.style = ""; // Reset style formatting if any custom style was applied
+      // Reset the key field guidelines note
+      const keyNote = document.getElementById("keyNote");
+      keyNote.style.color = "";
+      keyNote.textContent = "Key Entry Guidelines"; // Reset key note
+    // Update key field display based on selected algorithm
+      updateKeyField();
+      hideInfoBox();
+      // Keep key field visible
+      document.getElementById("keyField").style.display = "block";
+      updateModeOptions(); // Update mode options based on algorithm
+      const modeSelect = document.getElementById("mode");
+      modeSelect.selectedIndex = 0; // Select "Select Mode" again
+
+      // New features added for resetting result message and copy button visibility
+      var resultMessage = document.getElementById("resultMessage");
+      var copyMessage = document.getElementById("copyMessage");
+      resultMessage.style.display = "none"; // Hide the "No result found" message
+      copyMessage.style.display = "none"; // Hide the "Result copied to clipboard" message
+
+        // ✅ Hide the logBox and reset logVisible
+      const logBox = document.getElementById("logBox");
+      if (logBox) {
+        logBox.style.display = "none";
+      }
+      logVisible = false;
+
+        // ✅ Hide any warning immediately
+      clearWarning(); // <<<<< ADD THIS LINE
+    }
+
+    function toggleLog() {
+      const logBox = document.getElementById("logBox");
+      if (logVisible) {
+        logBox.style.display = "none";
+        logVisible = false;
+        return;
+      }
+      if (historyLog.length === 0) {
+        logBox.innerHTML = "<em>No history available.</em>";
+      } else {
+        logBox.innerHTML = historyLog.map(log => `
+          <div>
+            <strong>Message:</strong> ${log.message}<br/>
+            <strong>Key:</strong> ${log.key}<br/>
+            <strong>Mode:</strong> ${log.mode}<br/>
+            <strong>Algorithm:</strong> ${log.algorithm}<br/>
+            <strong>Result:</strong> ${log.result}<br/>
+            <hr/>
+          </div>
+        `).join('');
+      }
+      logBox.style.display = "block";
+      logVisible = true;
+    }
+
+    function toggleHowTo() {
+      var content = document.getElementById("howto-content");
+    
+      // Toggle the visibility of the content
+      if (content.style.display === "none" || content.style.display === "") {
+        content.style.display = "block"; // Show content
+        window.scrollTo({
+          top: content.offsetTop, // Scroll to the top of the content
+          behavior: "smooth" // Smooth scrolling
+        });
+      } else {
+        content.style.display = "none"; // Hide content
+      }
+    }
+
+/*   to exit website
+
+function exitApp() {
+      window.close();
+    }*/
+
+    // Event Listener.........
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("algorithm").addEventListener("change", () => {
+        resetKeyField();
+        updateKeyField();  // First, update the key field based on the selected algorithm
+        updateModeOptions(); // Then, update the mode options (if needed)
+        hideInfoBox();  // Hide the info box when the algorithm changes
+        showInfoBox();  // Optionally, show the info box
+        document.getElementById("result").value = "";
+      });
+    });
+    
+    function updateKeyField() {
+      const algorithm = document.getElementById("algorithm").value;
+      const keyField = document.getElementById("keyField");
+      const keyLabel = document.getElementById("keyLabel");
+      const keyNote = document.getElementById("keyNote");
+      const keyInput = document.getElementById("key");
+
+      // Reset placeholder and rule text
+      keyInput.placeholder = "Enter a key";
+      keyNote.textContent = "Key Entry Guidelines";
+    
+      if (algorithm === "aes") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Key";
+        keyNote.textContent = "Only alphabets allowed.";
+        keyInput.placeholder = "Enter alphabetic key";
+      } else if (algorithm === "caesar") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Shift (Number)";
+        keyNote.textContent = "Only numeric values allowed.";
+        keyInput.placeholder = "Enter numeric shift value";
+      } else if (algorithm === "vigenere") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Key (Alphabetic)";
+        keyNote.textContent = "Only alphabetic characters allowed.";
+        keyInput.placeholder = "Enter alphabetic key";
+      } else if (algorithm === "rot13" || algorithm === "base64") {
+        keyField.style.display = "none";
+      } else if (algorithm === "playfair" || algorithm === "columnar") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Key (Alphabetic)";
+        keyNote.textContent = "Only alphabetic characters allowed.";
+        keyInput.placeholder = "Enter alphabetic key";
+      } else if (algorithm === "railfence") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Key (Number of Rails)";
+        keyNote.textContent = "Enter a number greater than 1.";
+        keyInput.placeholder = "Enter number of rails (greater that 1)";
+      } else if (["md5", "sha256", "hex", "morse", "atbash"].includes(algorithm)) {
+        keyField.style.display = "none";
+      } else if (algorithm === "otp") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Key (Same length as message)";
+        keyNote.textContent = "Only alphabetic characters allowed.";
+        keyInput.placeholder = "Enter key (same length as message)";
+      } else if (algorithm === "rc4") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Key (Any text)";
+        keyNote.textContent = "Numeric values are also allowed.";
+        keyInput.placeholder = "Enter key (any text)";
+      } else if (algorithm === "des") {
+        keyField.style.display = "block";
+        keyLabel.textContent = "Key (Text)";
+        keyNote.textContent = "Keep it 8 or 8+ characters.";
+        keyInput.placeholder = "Enter 8-character key";
+      } else {
+        keyField.style.display = "none";
+      }
+    }
+
+    function updateModeOptions() {
+      const algorithm = document.getElementById("algorithm").value;
+      const modeSelect = document.getElementById("mode");
+      const noteBox = document.getElementById("noteBox");
+    
+      if (!modeSelect || !noteBox) return;
+    
+      const currentMode = modeSelect.value;
+    
+      if (algorithm === "md5" || algorithm === "sha256") {
+        modeSelect.innerHTML = '<option value="encrypt">Encryption</option>';
+        modeSelect.value = "encrypt";
+    
+        noteBox.innerText = "Note: Only encryption is available for this algorithm as it produces a hash value, not ciphertext.";
+        noteBox.style.display = "block";
+      } else {
+        modeSelect.innerHTML = `
+          <option value="" disabled>Select Mode</option>
+          <option value="encrypt">Encryption</option>
+          <option value="decrypt">Decryption</option>
+        `;
+        if (currentMode === "encrypt" || currentMode === "decrypt") {
+          modeSelect.value = currentMode;
+        } else {
+          modeSelect.value = "";
+        }
+    
+        noteBox.style.display = "none";
+        noteBox.innerText = "";
+      }
+    }    
+    
+    function hideInfoBox() {
+      const infoBox = document.getElementById("infoBox");
+      if (infoBox) {
+        infoBox.style.display = "none";  // Hide the info box
+        infoVisible = false;  // Update visibility flag
+      }
+    }
+  
+    // Function to show the info box
+    function showInfoBox() {
+      const infoBox = document.getElementById("infoBox");
+      if (infoBox && !infoVisible) {
+        infoBox.style.display = "block";  // Show the info box
+        infoVisible = true;  // Update visibility flag
+      }
+    }
+
+    function exitApp() {
+      // Confirm exit
+      const userConfirmed = confirm("Are you sure you want to exit?");
+      if (userConfirmed) {
+        // Attempt to close the window
+        window.close(); // Closes the window if it was opened via JavaScript
+      } else {
+        alert("You chose not to exit.");
+      }
+    }
+  </script>
+</body>
+</html>
